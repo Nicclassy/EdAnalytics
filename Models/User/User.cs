@@ -1,6 +1,6 @@
 namespace EdAnalytics.Models;
 
-public enum Role { Unknown, Student, Staff, Admin }
+public enum Role { Unknown, Student, Observer, Staff, Admin }
 
 public sealed record User(string Name, string Email, Role Role)
 {
