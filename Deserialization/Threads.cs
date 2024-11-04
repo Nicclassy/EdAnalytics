@@ -5,13 +5,16 @@ using EdAnalytics.Models;
 
 namespace EdAnalytics.Deserialization;
 
-public sealed class ThreadsJSONDeserializer 
+public static class Threads 
 {
+    private static readonly JsonSerializerOptions Options = new() { 
+        PropertyNameCaseInsensitive = true 
+    };
+    
     public static List<DiscussionThread> Deserialize(string path)
     {
         var json = File.ReadAllText(path);
-        var options = new JsonSerializerOptions { PropertyNameCaseInsensitive = true };
-        var deserializedThreads = JsonSerializer.Deserialize<List<DeserializedThread>>(json, options)!;
+        var deserializedThreads = JsonSerializer.Deserialize<List<DeserializedThread>>(json, Options)!;
         return deserializedThreads.Select(ParseDiscussionThread).ToList();
     }
 
@@ -89,9 +92,9 @@ public sealed class ThreadsJSONDeserializer
             ?? throw new InvalidDataException("Comment text not provided")
         );
         var metadata = new CommentMetadata(url, creationDate);
-        var nestedComments = (comment.Comments ?? []).Any() 
+        var nestedComments = (comment.Comments ?? []).Count > 0
             ? ParseComments(comment.Comments!)
-            : ImmutableArray<Comment>.Empty;
+            : [];
 
         return new Comment(
             poster,
