@@ -4,11 +4,11 @@ using EdAnalytics.Models;
 
 namespace EdAnalytics.Deserialization;
 
-public sealed class Analytics
+public static class AnalyticsCSV
 {
-    public static List<UserAnalytics> FromCSV(string path) => FromCSV(path, NamedTutorial.Strategy);
+    public static List<UserAnalytics> Parse(string path) => Parse(path, NamedTutorial.Strategy);
 
-    public static List<UserAnalytics> FromCSV(string path, TutorialStrategy strategy)
+    public static List<UserAnalytics> Parse(string path, TutorialStrategy strategy)
     {
         using TextFieldParser parser = new(path);
         parser.SetDelimiters(",");

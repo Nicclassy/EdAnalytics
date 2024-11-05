@@ -5,7 +5,7 @@ using EdAnalytics.Models;
 
 namespace EdAnalytics.Deserialization;
 
-public static class Threads 
+public static class ThreadsJSON 
 {
     private static readonly JsonSerializerOptions Options = new() { 
         PropertyNameCaseInsensitive = true 
@@ -14,7 +14,8 @@ public static class Threads
     public static List<DiscussionThread> Deserialize(string path)
     {
         var json = File.ReadAllText(path);
-        var deserializedThreads = JsonSerializer.Deserialize<List<DeserializedThread>>(json, Options)!;
+        var deserializedThreads = 
+            JsonSerializer.Deserialize<List<DeserializedThread>>(json, Options)!;
         return deserializedThreads.Select(ParseDiscussionThread).ToList();
     }
 
