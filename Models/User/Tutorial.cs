@@ -1,36 +1,37 @@
 namespace EdAnalytics.Models;
 
-public enum WeekdayAbbreviated { Mon, Tue, Wed, Thur, Fri, Sat, Sun }
+public enum DayAbbreviated { Mon, Tue, Wed, Thur, Fri, Sat, Sun }
 
-public delegate Tutorial TutorialStrategy(string value);
+public delegate Tutorial TutorialFactory(string value);
 
-public abstract record Tutorial;
-
-public sealed record NamedTutorial(string Name) : Tutorial
+public abstract class Tutorial
 {
-    public static NamedTutorial Strategy(string value) => 
-        new(value);
+    public abstract int Lab { get; }
+    public abstract int StartHour { get; }
+    public abstract DayAbbreviated Day { get; }
+    public abstract string Room { get; }
+    public abstract string Tutor { get; }
 }
 
-public sealed record Info1112Tags(string[] Tags) : Tutorial
+public sealed class Info1112Tutorial(string[] tags) : Tutorial
 {
-    public int Lab => TagStrategies.Lab(Tags[0]);
-    public WeekdayAbbreviated Weekday = TagStrategies.Weekday(Tags[1]);
-    public int StartHour => int.Parse(Tags[2]);
-    public string Room => Tags[3];
-    public string Tutor => Tags[4];
+    private const char TagsDelimiter = ';';
 
-    private const char Delimiter = ';';
+    public override int Lab => TagParser.Lab(tags[0]);
+    public override int StartHour => int.Parse(tags[2]);
+    public override DayAbbreviated Day => TagParser.Day(tags[1]);
+    public override string Room => tags[3];
+    public override string Tutor => tags[4];
 
-    public static Info1112Tags Stategy(string value) =>
-        new Info1112Tags(value.Split(Delimiter));
+    public static Info1112Tutorial Create(string value) => 
+        new(value.Split(TagsDelimiter));
 }
 
-public static class TagStrategies
+public static class TagParser
 {
     public static int Lab(string value) => 
         int.Parse(value.Substring(3, 2));
     
-    public static WeekdayAbbreviated Weekday(string value) =>
-        Enum.Parse<WeekdayAbbreviated>(value);
+    public static DayAbbreviated Day(string value) =>
+        Enum.Parse<DayAbbreviated>(value);
 }
