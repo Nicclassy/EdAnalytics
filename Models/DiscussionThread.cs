@@ -3,7 +3,7 @@ using System.Collections.Immutable;
 namespace EdAnalytics.Models;
 
 public sealed record DiscussionThread(
-    User Poster,
+    Account Poster,
     ContentText Title,
     ContentText Text,
     ThreadMetadata Metadata,

@@ -1,7 +1,7 @@
 namespace EdAnalytics.Models;
 
-public sealed record UserAnalytics(
-    User User,
+public sealed record User(
+    Account Account,
     Tutorial Tutorial,
     UserThreads Threads,
     UserResponses Responses,
