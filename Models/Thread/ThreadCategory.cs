@@ -2,7 +2,7 @@ namespace EdAnalytics.Models;
 
 public abstract record ThreadCategory 
 {
-    public static ThreadCategory Parse(string? name) =>
+    public static ThreadCategory Create(string? name) =>
         string.IsNullOrWhiteSpace(name) ? new CategoryAbsent() : new Category(name);
 
     public abstract bool Exists();

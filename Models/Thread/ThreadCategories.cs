@@ -8,8 +8,8 @@ public sealed record ThreadCategories(
 {
     public ThreadCategories(string? category, string? subcategory, string? subsubcategory)
         : this(
-            ThreadCategory.Parse(category), 
-            ThreadCategory.Parse(subcategory), 
-            ThreadCategory.Parse(subsubcategory)
+            ThreadCategory.Create(category), 
+            ThreadCategory.Create(subcategory), 
+            ThreadCategory.Create(subsubcategory)
         ) {}
 }
