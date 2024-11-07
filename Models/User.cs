@@ -6,5 +6,5 @@ public sealed record User(
     UserThreads Threads,
     UserResponses Responses,
     FavourableReactions Reactions,
-    DiscussionStatistics Discussion
+    UserDiscussionStatistics Discussion
 );
