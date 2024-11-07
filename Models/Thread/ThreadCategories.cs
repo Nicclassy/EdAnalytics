@@ -1,4 +1,4 @@
-namespace EdAnalytics.Models;
+namespace Ed.Analytics.Models;
 
 public sealed record ThreadCategories(
     ThreadCategory Category, 

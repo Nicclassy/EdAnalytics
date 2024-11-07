@@ -1,4 +1,4 @@
-namespace EdAnalytics.Models;
+namespace Ed.Analytics.Models;
 
 public readonly record struct ThreadInteractions(int Votes, int Views, int UniqueViews) 
 {

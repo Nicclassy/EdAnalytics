@@ -1,4 +1,4 @@
-namespace EdAnalytics.Models;
+namespace Ed.Analytics.Models;
 
 public readonly record struct ThreadAttributes(bool Private, bool Anonymous, bool Endorsed)
 {

@@ -1,6 +1,6 @@
 using System.Collections.Immutable;
 
-namespace EdAnalytics.Models;
+namespace Ed.Analytics.Models;
 
 public sealed record DiscussionThread(
     Account Poster,

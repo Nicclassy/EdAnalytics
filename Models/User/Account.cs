@@ -1,4 +1,4 @@
-namespace EdAnalytics.Models;
+namespace Ed.Analytics.Models;
 
 public enum DiscussionRole { Unknown, Student, Observer, Staff, Admin }
 

@@ -2,10 +2,10 @@ using System.Text.Json;
 using System.Text.Json.Serialization;
 using System.Collections.Immutable;
 
-using EdAnalytics.EdDiscussion;
-using EdAnalytics.Models;
+using Ed.Analytics.EdDiscussion;
+using Ed.Analytics.Models;
 
-namespace EdAnalytics.Deserialization;
+namespace Ed.Analytics.Deserialization;
 
 public static class ThreadsJSON 
 {

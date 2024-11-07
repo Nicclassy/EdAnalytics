@@ -1,16 +1,16 @@
 using System.Collections.Immutable;
 using Microsoft.VisualBasic.FileIO;
 
-using EdAnalytics.Models;
-using EdAnalytics.EdDiscussion;
+using Ed.Analytics.Models;
+using Ed.Analytics.EdDiscussion;
 
-namespace EdAnalytics.Deserialization;
+namespace Ed.Analytics.Deserialization;
 
 public static class AnalyticsCSV
 {
-    public static Analytics Parse(string path) => Parse(path, Info1112Tutorial.Create);
+    public static UserAnalytics Parse(string path) => Parse(path, Info1112Tutorial.Create);
 
-    public static Analytics Parse(string path, TutorialFactory factory)
+    public static UserAnalytics Parse(string path, TutorialFactory factory)
     {
         using TextFieldParser parser = new(path);
         parser.SetDelimiters(",");

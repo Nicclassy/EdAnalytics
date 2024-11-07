@@ -1,6 +1,6 @@
 using System.Globalization;
 
-namespace EdAnalytics.Models;
+namespace Ed.Analytics.Models;
 
 public sealed record UserDiscussionStatistics(int Views, int DaysActive, DateTime Enrolled)
 {

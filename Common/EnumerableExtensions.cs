@@ -1,4 +1,4 @@
-namespace EdAnalytics.Common;
+namespace Ed.Analytics.Common;
 
 public static class EnumerableExtensions
 {

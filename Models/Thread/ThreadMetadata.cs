@@ -1,4 +1,4 @@
-namespace EdAnalytics.Models;
+namespace Ed.Analytics.Models;
 
 public sealed record ThreadMetadata(ContentURL Url, CreationDate Date, ThreadType Type, ThreadNumber Number)
 {

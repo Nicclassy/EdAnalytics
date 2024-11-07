@@ -1,9 +1,9 @@
 using System.Collections;
 using System.Collections.Immutable;
 
-using EdAnalytics.Models;
+using Ed.Analytics.Models;
 
-namespace EdAnalytics.EdDiscussion;
+namespace Ed.Analytics.EdDiscussion;
 
 public sealed class Threads(ImmutableArray<DiscussionThread> _threads) : IEnumerable<DiscussionThread>
 {

@@ -1,4 +1,4 @@
-namespace EdAnalytics.Models;
+namespace Ed.Analytics.Models;
 
 public enum DayAbbreviated { Mon, Tue, Wed, Thur, Fri, Sat, Sun }
 
