@@ -1,3 +1,3 @@
 namespace EdAnalytics.Models;
 
-public sealed record ContentText(string Text);
+public readonly record struct ContentText(string Text);

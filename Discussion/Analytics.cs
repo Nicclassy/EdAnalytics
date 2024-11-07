@@ -45,7 +45,7 @@ public static class AnalyticsStatistics
     {
         var queryTutorGroups =
             from user in analytics
-            where user.Account.Role == Role.Student
+            where user.Account.Role == DiscussionRole.Student
             group user by user.Tutorial.Tutor;
 
         var queryResult =

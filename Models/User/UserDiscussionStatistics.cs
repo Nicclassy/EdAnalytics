@@ -8,7 +8,7 @@ public sealed record UserDiscussionStatistics(int Views, int DaysActive, DateTim
     private const string EnrolmentTimezone = "AEST";
     private const int HoursDifference = 10;
 
-    public static UserDiscussionStatistics Create(string views, string daysActive, string enrolled)
+    public static UserDiscussionStatistics Parse(string views, string daysActive, string enrolled)
     {
         string enrolmentWithoutTimezone = 
             enrolled.Replace(EnrolmentTimezone, "").TrimEnd();

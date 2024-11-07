@@ -46,7 +46,7 @@ public static class AnalyticsCSV
             int.Parse(fields[12]),
             int.Parse(fields[13])
         );
-        var discussion = UserDiscussionStatistics.Create(
+        var discussion = UserDiscussionStatistics.Parse(
             fields[5],
             fields[16],
             fields[18]

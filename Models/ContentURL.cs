@@ -1,6 +1,6 @@
 namespace EdAnalytics.Models;
 
-public sealed record ContentURL(Uri Uri)
+public readonly record struct ContentURL(Uri Uri)
 {
     public static ContentURL Parse(string? url) =>
         Uri.TryCreate(url, UriKind.Absolute, out Uri? result) && result is Uri uri ? 

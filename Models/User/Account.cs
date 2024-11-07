@@ -9,7 +9,6 @@ public sealed record Account(string Name, string Email, DiscussionRole Role)
         ArgumentException.ThrowIfNullOrWhiteSpace(name, nameof(name));
         ArgumentException.ThrowIfNullOrWhiteSpace(email, nameof(email));
         var userRole = !string.IsNullOrWhiteSpace(role) ? 
-
             (DiscussionRole) Enum.Parse(typeof(DiscussionRole), role, true) :
             DiscussionRole.Unknown;
         
