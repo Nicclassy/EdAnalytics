@@ -397,3 +397,7 @@ FodyWeavers.xsd
 
 # MacOS files
 .DS_Store
+
+# Project files
+Data/
+Program.cs
