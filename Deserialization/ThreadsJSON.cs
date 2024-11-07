@@ -1,29 +1,34 @@
-using System.Collections.Immutable;
 using System.Text.Json;
+using System.Text.Json.Serialization;
+using System.Collections.Immutable;
 
+using EdAnalytics.EdDiscussion;
 using EdAnalytics.Models;
 
 namespace EdAnalytics.Deserialization;
 
 public static class ThreadsJSON 
 {
-    private static readonly JsonSerializerOptions Options = new() { 
-        PropertyNameCaseInsensitive = true 
+    private static readonly JsonSerializerOptions Options = new() 
+    { 
+        PropertyNameCaseInsensitive = true
     };
     
-    public static List<DiscussionThread> Deserialize(string path)
+    public static Threads Deserialize(string path)
     {
         var json = File.ReadAllText(path);
         var deserializedThreads = 
             JsonSerializer.Deserialize<List<DeserializedThread>>(json, Options)!;
-        return deserializedThreads.Select(ParseDiscussionThread).ToList();
+        var threads = 
+            deserializedThreads.Select(ParseDiscussionThread);
+        return new(threads.ToImmutableArray());
     }
 
     private static DiscussionThread ParseDiscussionThread(DeserializedThread thread)
     {
         var user = 
             thread.User ?? throw new InvalidDataException("User not found in thread");
-        var poster = User.Parse(
+        var poster = Account.Parse(
             user.Name, 
             user.Email, 
             user.Role
@@ -56,7 +61,7 @@ public static class ThreadsJSON
             thread.Endorsed
         );
         
-        return new DiscussionThread(
+        return new (
             poster,
             title,
             text,
@@ -76,7 +81,7 @@ public static class ThreadsJSON
     {
         var user = 
             comment.User ?? throw new InvalidDataException("User not found in thread");
-        var poster = User.Parse(
+        var poster = Account.Parse(
             user.Name, 
             user.Email, 
             user.Role
@@ -94,8 +99,7 @@ public static class ThreadsJSON
         );
         var metadata = new CommentMetadata(url, creationDate);
         var nestedComments = (comment.Comments ?? []).Count > 0
-            ? ParseComments(comment.Comments!)
-            : [];
+            ? ParseComments(comment.Comments!) : [];
 
         return new Comment(
             poster,
@@ -118,6 +122,7 @@ class DeserializedComment
 {
     public string? Url { get; set; }
     public int? Votes { get; set; }
+    [JsonPropertyName("created_at")]
     public string? CreatedAt { get; set; }
     public DeserializedUser? User { get; set; }
 
@@ -147,6 +152,7 @@ class DeserializedThread
     public bool? Private { get; set; }
     public bool? Anonymous { get; set; }
     public bool? Endorsed { get; set; }
+    [JsonPropertyName("created_at")]
     public string? CreatedAt { get; set; }
 
     public DeserializedUser? User { get; set; }

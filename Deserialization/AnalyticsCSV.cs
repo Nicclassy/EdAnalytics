@@ -1,35 +1,37 @@
+using System.Collections.Immutable;
 using Microsoft.VisualBasic.FileIO;
 
 using EdAnalytics.Models;
+using EdAnalytics.EdDiscussion;
 
 namespace EdAnalytics.Deserialization;
 
 public static class AnalyticsCSV
 {
-    public static List<UserAnalytics> Parse(string path) => Parse(path, NamedTutorial.Strategy);
+    public static Analytics Parse(string path) => Parse(path, Info1112Tutorial.Create);
 
-    public static List<UserAnalytics> Parse(string path, TutorialStrategy strategy)
+    public static Analytics Parse(string path, TutorialFactory factory)
     {
         using TextFieldParser parser = new(path);
         parser.SetDelimiters(",");
         parser.HasFieldsEnclosedInQuotes = true;
         parser.ReadLine();
 
-        var analytics = new List<UserAnalytics>();
+        var analytics = ImmutableArray.CreateBuilder<User>();
         while (!parser.EndOfData)
         {
             var fields = 
                 parser.ReadFields() ?? throw new InvalidDataException("Invalid fields");
-            analytics.Add(ParseUserAnalytics(fields, strategy));
+            analytics.Add(ParseUserAnalytics(fields, factory));
         }
 
-        return analytics;
+        return new(analytics.ToImmutable());
     }
 
-    private static UserAnalytics ParseUserAnalytics(string[] fields, TutorialStrategy strategy)
+    private static User ParseUserAnalytics(string[] fields, TutorialFactory factory)
     {
-        var user = User.Parse(fields[0], fields[1], fields[2]);
-        var tutorial = strategy.Invoke(fields[3]);
+        var user = Account.Parse(fields[0], fields[1], fields[2]);
+        var tutorial = factory.Invoke(fields[3]);
         var threads = new UserThreads(
             int.Parse(fields[6]),
             int.Parse(fields[7]),
@@ -44,12 +46,12 @@ public static class AnalyticsCSV
             int.Parse(fields[12]),
             int.Parse(fields[13])
         );
-        var discussion = DiscussionStatistics.Create(
+        var discussion = UserDiscussionStatistics.Create(
             fields[5],
             fields[16],
             fields[18]
         );
-        return new UserAnalytics(
+        return new(
             user,
             tutorial,
             threads,
