@@ -2,7 +2,7 @@ using System.Text.Json;
 using System.Text.Json.Serialization;
 using System.Collections.Immutable;
 
-using Ed.Analytics.EdDiscussion;
+using Ed.Analytics.Discussion;
 using Ed.Analytics.Models;
 
 namespace Ed.Analytics.Deserialization;

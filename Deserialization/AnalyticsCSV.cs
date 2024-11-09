@@ -2,7 +2,7 @@ using System.Collections.Immutable;
 using Microsoft.VisualBasic.FileIO;
 
 using Ed.Analytics.Models;
-using Ed.Analytics.EdDiscussion;
+using Ed.Analytics.Discussion;
 
 namespace Ed.Analytics.Deserialization;
 
@@ -46,7 +46,7 @@ public static class AnalyticsCSV
             int.Parse(fields[12]),
             int.Parse(fields[13])
         );
-        var discussion = UserDiscussionStatistics.Parse(
+        var discussion = UserParticipation.Parse(
             fields[5],
             fields[16],
             fields[18]
