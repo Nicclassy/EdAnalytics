@@ -9,12 +9,12 @@ downloadable if you are an administrator on that discussion
 ## Example Usage
 Start by creating the two required objects: an `Analytics` instance and a `Threads` instance.
 ```cs
-using EdAnalytics.Deserialization;
-using EdAnalytics.EdDiscussion;
-using EdAnalytics.Models;
+using Ed.Analytics.Deserialization;
+using Ed.Analytics.Discussion;
+using Ed.Analytics.Models;
 
 Threads threads = ThreadsJSON.Deserialize("threads.json");
-Analytics analytics = AnalyticsCSV.Parse("analytics.csv");
+UserAnalytics analytics = AnalyticsCSV.Parse("analytics.csv");
 ```
 
 Now you can analyse the data as you wish. Two code examples are provided
@@ -25,7 +25,7 @@ output the list of users who have received more than twenty hearts in the discus
 ```cs
 var query = 
     from user in analytics
-    where user.Reactions.Hearts > 20 && user.Account.Role == Role.Student
+    where user.Reactions.Hearts > 20 && user.Account.Role == DiscussionRole.Student
     orderby user.Reactions.Hearts descending
     select new 
     {
@@ -44,7 +44,7 @@ of students of each tutor and sorts them in a descending order
 ```cs
 var queryTutorGroups =
     from user in analytics
-    where user.Account.Role == Role.Student
+    where user.Account.Role == DiscussionRole.Student
     group user by user.Tutorial.Tutor;
 
 var heartsOfTutor =
