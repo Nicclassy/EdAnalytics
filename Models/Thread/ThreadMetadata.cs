@@ -1,11 +1,11 @@
 namespace Ed.Analytics.Models;
 
-public sealed record ThreadMetadata(ContentURL Url, CreationDate Date, ThreadType Type, ThreadNumber Number)
+public sealed record ThreadMetadata(ContentURL Url, CreationTime CreationTime, ThreadType Type, ThreadNumber Number)
 {
-    public static ThreadMetadata Parse(string? url, string? creationDate, string? threadType, int? threadNumber) =>
+    public static ThreadMetadata Parse(string? url, string? creationTime, string? threadType, int? threadNumber) =>
         new(
             ContentURL.Parse(url),
-            CreationDate.Parse(creationDate),
+            CreationTime.Parse(creationTime),
             ThreadTypeExtensions.Parse(threadType),
             ThreadNumber.Parse(threadNumber)
         );

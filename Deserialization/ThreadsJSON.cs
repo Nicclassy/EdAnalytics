@@ -92,7 +92,7 @@ public static class ThreadsJSON
             comment.Endorsed,
             comment.Anonymous
         );
-        var creationDate = CreationDate.Parse(comment.CreatedAt);
+        var creationDate = CreationTime.Parse(comment.CreatedAt);
         var text = new ContentText(
             comment.Text
             ?? throw new InvalidDataException("Comment text not provided")
