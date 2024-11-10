@@ -1,15 +1,20 @@
 using System.Collections;
 using System.Collections.Immutable;
-
+using Ed.Analytics.Common;
 using Ed.Analytics.Models;
 
 namespace Ed.Analytics.Discussion;
+
+public delegate IComparable UserSelector(User user);
+public delegate string UserFormatter(User user);
 
 public sealed class UserAnalytics(ImmutableArray<User> _analytics) : IEnumerable<User>
 {
     public const int DefaultCount = 5;
 
     public UserAnalytics(IEnumerable<User> analytics): this(analytics.ToImmutableArray()) {}
+
+    public int Length => _analytics.Length;
 
     public User this[Index index] => _analytics[index];
 
@@ -23,8 +28,27 @@ public sealed class UserAnalytics(ImmutableArray<User> _analytics) : IEnumerable
     IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
 }
 
-public static class AnalyticsFiltering
+public static class AnalyticsOrdering
 {
+    public static IEnumerable<(User, IComparable)> CountAndOrderBy(
+        this UserAnalytics analytics, 
+        UserSelector selector,
+        int count = UserAnalytics.DefaultCount
+    ) => analytics
+            .Select(user => (user, selector(user)))
+            .OrderByDescending(pair => pair.Item2)
+            .Take(count);
+
+    public static IEnumerable<(string, IComparable)> CountFormatAndOrderBy(
+        this UserAnalytics analytics, 
+        UserSelector selector,
+        UserFormatter formatter,
+        int count = UserAnalytics.DefaultCount
+    ) => analytics
+            .Select(user => (formatter(user), selector(user)))
+            .OrderByDescending(pair => pair.Item2)
+            .Take(count);
+
     public static IEnumerable<(string, int)> GroupByTutor(this UserAnalytics analytics, Func<User, int> predicate)
     {
         var queryTutorGroups =
@@ -41,10 +65,17 @@ public static class AnalyticsFiltering
         return queryResult;
     }
 
-    public static UserAnalytics TopDescending(this UserAnalytics analytics, Func<User, IComparable> predicate, int count = UserAnalytics.DefaultCount) =>
+    public static UserAnalytics TopDescending(
+        this UserAnalytics analytics, 
+        Func<User, IComparable> predicate, 
+        int count = UserAnalytics.DefaultCount
+    ) =>
         new(analytics
             .OrderByDescending(predicate).Take(count));
+}
 
+public static class AnalyticsFiltering
+{
     public static UserAnalytics OnDay(this UserAnalytics analytics, DayAbbreviated day) =>
         new(analytics
             .Where(user => user.Tutorial.Day == day));
@@ -66,15 +97,15 @@ public static class AnalyticsStatistics
 {
     public static UserAnalytics TopEndorsed(this UserAnalytics analytics, int count = UserAnalytics.DefaultCount) =>
         analytics.TopDescending(user => user.Reactions.Endorsements);
-        
+
     public static IEnumerable<(string, int)> TutorsByHearts(this UserAnalytics analytics) =>
         analytics.GroupByTutor(student => student.Reactions.Hearts);
 }
 
 public static class UserStatistics
 {
-    public static float AcceptedAnswerPercentage(this User user) =>
-        user.Responses.Answers == 0 ? 0 : (float) user.Responses.AcceptedAnswers / user.Responses.Answers * 100;
+    public static double AcceptedAnswerPercentage(this User user) =>
+        ((double) user.Responses.AcceptedAnswers).PercentageOf((double) user.Responses.Answers);
 
     public static UserAnalytics MostAcceptedAnswers(this UserAnalytics analytics, int count = UserAnalytics.DefaultCount) => 
         analytics.TopDescending(user => user.AcceptedAnswerPercentage(), count);

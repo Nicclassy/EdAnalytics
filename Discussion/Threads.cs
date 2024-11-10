@@ -6,6 +6,7 @@ using Ed.Analytics.Models;
 namespace Ed.Analytics.Discussion;
 
 public delegate IComparable ThreadSelector(DiscussionThread thread);
+public delegate string ThreadFormatter(DiscussionThread thread);
 
 public sealed class Threads(ImmutableArray<DiscussionThread> _threads) : IEnumerable<DiscussionThread>
 {
@@ -69,13 +70,25 @@ public static class ThreadsFiltering
             .OrderByDescending(pair => pair.Item2)
             .Take(count);
 
+    public static IEnumerable<(string, IComparable)> CountFormatAndOrderBy(
+        this Threads threads, 
+        ThreadSelector selector,
+        ThreadFormatter formatter,
+        int count = ThreadsStatistics.DefaultCount
+    ) => threads
+            .Select(thread => (formatter(thread), selector(thread)))
+            .OrderByDescending(pair => pair.Item2)
+            .Take(count);
+
     public static Threads Questions(this Threads threads) =>
         new(threads
             .Where(thread => thread.Metadata.Type == ThreadType.Question));
 
     public static Threads WithCategory(this Threads threads, string categoryName) =>
         new(threads
-            .Where(thread => thread.Categories.Category is Category(string name) && name.Equals(categoryName)));
+            .Where(thread => 
+                thread.Categories.Category is Category(string name) 
+                && name.Equals(categoryName)));
 
     public static Threads StudentsOnly(this Threads threads) => 
         new(threads
@@ -105,6 +118,17 @@ public static class ThreadsStatistics
         new(threads 
             .OrderByDescending(thread => thread.TotalVotes())
             .Take(count));
+
+    public static TimeSpan AverageResponseTime(this Threads threads, params DiscussionRole[] roles)
+    {
+        var responseTimes = threads
+            .Select(thread => thread.FastestResponseTimeByRoles(roles))
+            .OfType<TimeSpan>();
+        
+        var totalSeconds = responseTimes.Average(responseTime => responseTime.TotalSeconds);
+        var averageResponseTime = TimeSpan.FromSeconds((long) totalSeconds);
+        return averageResponseTime;
+    }
 }
 
 public static class ThreadStatistics
@@ -115,6 +139,23 @@ public static class ThreadStatistics
         var answerVotes = thread.Answers.Sum(VotesIncludingSubcomments);
         var commentVotes = thread.Comments.Sum(VotesIncludingSubcomments);
         return threadVotes + answerVotes + commentVotes;
+    }
+
+    public static TimeSpan? FastestResponseTimeByRoles(this DiscussionThread thread, DiscussionRole[] roles)
+    {
+        if (!thread.Metadata.CreationTime.Exists())
+            return null;
+
+        var creationTime = ((FullTime) thread.Metadata.CreationTime).DateTime;
+        var soonestReply = DateTime.MaxValue;
+        foreach (var answer in thread.Answers)
+        {
+            bool replierIsSameRole = roles.Length == 0 || roles.Contains(answer.Poster.Role);
+            if (replierIsSameRole && answer.Metadata.Date is FullTime(DateTime dateTime) && dateTime < soonestReply)
+                soonestReply = dateTime;
+        }
+
+        return soonestReply - creationTime;
     }
 
     public static int VotesIncludingSubcomments(this Comment comment) =>
