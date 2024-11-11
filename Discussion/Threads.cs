@@ -102,7 +102,8 @@ public static class ThreadsFiltering
 
     public static Threads OfUser(this Threads threads, string username) =>
         new(threads
-            .Where(thread => thread.Poster.Name == username).ToImmutableArray());
+            .Where(thread => thread.Poster.Name == username)
+            .ToImmutableArray());
 }
 
 public static class ThreadsStatistics
@@ -155,7 +156,7 @@ public static class ThreadStatistics
                 soonestReply = dateTime;
         }
 
-        return soonestReply - creationTime;
+        return soonestReply == DateTime.MaxValue ? null : soonestReply - creationTime;
     }
 
     public static int VotesIncludingSubcomments(this Comment comment) =>

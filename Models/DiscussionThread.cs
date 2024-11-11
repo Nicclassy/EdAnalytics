@@ -22,7 +22,11 @@ public sealed record DiscussionThread(
     public string Summary() => $"'{Title.Text}' by {PosterProperName()} ({InternalHyperlink()})";
 
     public IEnumerable<Comment> Responses() =>
-        Answers.Concat(Comments).SelectMany(comment => comment.Subcomments());
+        Answers
+            .Concat(Comments)
+            .SelectMany(comment => comment.Subcomments())
+            .Concat(Answers)
+            .Concat(Comments);
 
     public int CountOccurrences(string value) =>
         Title.Text.CountCaseInsensitive(value)

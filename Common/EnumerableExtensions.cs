@@ -3,7 +3,8 @@ namespace Ed.Analytics.Common;
 public static class EnumerableExtensions
 {
     public static IEnumerable<T> Inspect<T>(this IEnumerable<T> source, Action<T> action) =>
-        source.Select(value => {
+        source.Select(value => 
+        {
             action(value); 
             return value;
         });
