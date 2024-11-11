@@ -1,10 +1,9 @@
 using Ed.Analytics.Models;
 using Ed.Analytics.Common;
-using System.Text.RegularExpressions;
 
 namespace Ed.Analytics.Discussion;
 
-public sealed class DiscussionStatistics(UserAnalytics _analytics, Threads _threads)
+public sealed partial class DiscussionStatistics(UserAnalytics _analytics, Threads _threads)
 {
     public UserAnalytics Analytics { get; } = _analytics;
     public Threads Threads { get; } = _threads;
@@ -51,7 +50,29 @@ public sealed class DiscussionStatistics(UserAnalytics _analytics, Threads _thre
             Console.WriteLine($"{i}. {poster.Name}: {poster.Hearts} hearts");
     }
 
-    public void TopEndorsedStudents()
+    public void MostVotedStudentsByComments()
+    {
+        int TotalVotes(User user, Threads threads)
+        {
+            var votes = 0;
+            foreach (var thread in Threads)
+            {
+                votes += thread
+                    .Responses()
+                    .Where(response => response.Poster.Name == user.Account.Name)
+                    .Sum(response => response.Attributes.Votes);
+            }
+
+            return votes;
+        }
+
+        Analytics
+            .StudentsOnly()
+            .CountFormatAndOrderBy(user => TotalVotes(user, Threads), user => user.Account.Name, count: 15)
+            .WriteEnumeratedCount();
+    }
+
+    public void MostEndorsedStudents()
     {
         var topEndorsed = Analytics.StudentsOnly().TopEndorsed(count: 5);
         foreach ((var i, var user) in topEndorsed.Enumerate(start: 1))
@@ -80,46 +101,31 @@ public sealed class DiscussionStatistics(UserAnalytics _analytics, Threads _thre
             .OrderByDescending(thread => thread.TotalVotes())
             .Enumerate(start: 1)
             .Select(pair =>
-                $"{pair.Item1}. '{pair.Item2.Title.Text}' " +
-                $"by {pair.Item2.Poster.Name} ({pair.Item2.TotalVotes()} votes)"
-            )
+                $"{pair.Item1}. '{pair.Item2.Title.Text}' {pair.Item2.InternalHyperlink()} " +
+                $"by {pair.Item2.PosterProperName()} ({pair.Item2.TotalVotes()} votes)")
             .ForEachWriteLine();
     }
 
-    public void CourseCodeOccurrences(string courseCode)
+    public void MostVotedThreads()
+    {
+        Threads
+            .StudentsOnly()
+            .OrderByDescending(thread => thread.Interactions.Votes)
+            .Take(DefaultCount)
+            .Enumerate(start: 1)
+            .Select(pair =>
+                $"{pair.Item1}. '{pair.Item2.Title.Text}' {pair.Item2.InternalHyperlink()} " +
+                $"by {pair.Item2.PosterProperName()} ({pair.Item2.Interactions.Votes} votes)")
+            .ForEachWriteLine();
+    }
+
+    public void CourseCodeOccurrencesByThread(string courseCode)
     {
         Threads
             .Public()
             .CountAndOrderBy(thread => thread.CountOccurrences(courseCode))
             .Select(pair => (pair.Item1.Summary(), pair.Item2))
             .ForEachCountedWriteCommaSeparated();
-    }
-
-    public void PublicAndNotAnonymous()
-    {
-        var studentThreads = Threads.StudentsOnly();
-        int threadCount = studentThreads.Length;
-        var notPrivateOrAnonymous = studentThreads.Count(thread => 
-            !thread.Attributes.Anonymous && !thread.Attributes.Private
-        );
-        Console.WriteLine(
-            $"{notPrivateOrAnonymous.PercentageOf(threadCount)}% " +
-            "of all threads were public and not anonymous");
-    }
-
-    public void GratitudePercentage()
-    {
-        var studentThreads = Threads.StudentsOnly();
-        int threadCount = studentThreads.Length;
-        var thankYous = studentThreads.Count(delegate(DiscussionThread thread)
-        {
-            var thankYou = thread.CountOccurrences("Thank you");
-            var thanks = thread.CountOccurrences("Thanks");
-            return thankYou + thanks > 0;
-        });
-        Console.WriteLine(
-            $"{thankYous.PercentageOf(threadCount)}% " +
-            "had someone express gratitude saying either 'Thanks' or 'Thank you'");
     }
 
     public void ThreadsWithMostComments()
@@ -135,31 +141,12 @@ public sealed class DiscussionStatistics(UserAnalytics _analytics, Threads _thre
 
     public void ThreadsWithMostPositiveSentiment()
     {
-        var mostPositiveThreads = Threads.SuperlativeSentiment(VaderSentiment.Positive);
+        var mostPositiveThreads = Threads.Public().SuperlativeSentiment(VaderSentiment.Positive);
         Console.Write("The most positive threads in the discussion are: ");
         mostPositiveThreads
             .Select(thread =>
                 $"{thread.InternalHyperlink()} ({thread.Sentiments().AssociatedScore(VaderSentiment.Positive)})")
             .ForEachWriteCommaSeparated();
-    }
-
-    public void CategoryResponseRate(string categoryName)
-    {
-        var a1Threads = Threads.WithCategory(categoryName).Questions().StudentsOnly();
-        var responseCount = a1Threads.Count(thread => thread.IsRespondedTo());
-        var percentageAnswered = responseCount.PercentageOf(a1Threads.Count());
-        Console.WriteLine($"{percentageAnswered}% of threads with category '{categoryName}' were answered");
-    }
-
-    public void CommentsButNoAnswers(string categoryName)
-    {
-        var selection = Threads.WithCategory(categoryName).Questions().StudentsOnly();
-        var count = selection
-            .Where(thread => thread.Comments.Any() && !thread.Answers.Any())
-            .Count();
-        Console.WriteLine(
-            $"{count.PercentageOf(selection.Length)}% " +
-            $"of threads with category '{categoryName}' were commented on but had no answers");
     }
 
     public void MostStudentThreadParticipations()
@@ -189,47 +176,11 @@ public sealed class DiscussionStatistics(UserAnalytics _analytics, Threads _thre
             .WriteEnumeratedCount();
     }
 
-    public void PercentageOfUsersWithEmojis()
+    public void MostDaysActive()
     {
-        var totalCount = Analytics.Length;
-        var withEmoji = Analytics.Where(user => user.Account.Name.ContainsEmoji()).Count();
-        var percentage = withEmoji.PercentageOf(totalCount);
-        Console.WriteLine(
-            $"{percentage}% of users ({withEmoji} users) " +
-            "in the INFO1112 discussion have an emoji in their name");
-    }
-
-    public void NumberOfThreadHyperlinks()
-    {
-        int HyperlinkCount(string text) => Regex.Matches(text, @"#\d+").Count;
-        int ThreadHyperlinkCount(DiscussionThread thread)
-        {
-            var count = HyperlinkCount(thread.Content.Text);
-            count += thread.Responses().Sum(response => HyperlinkCount(thread.Content.Text));
-            return count;
-        }
-
-        var hyperlinkCount = Threads.Sum(ThreadHyperlinkCount);
-        Console.WriteLine($"{hyperlinkCount} hyperlinks were used");
-    }
-
-    public void AverageStudentResponseTime()
-    {
-        var studentThreads = Threads.StudentsOnly().Questions();
-        var responseTime = studentThreads.AverageResponseTime(DiscussionRole.Student);
-        Console.WriteLine(
-            "Of all threads responded to by students, " +
-            "the average response time of the fastest response was " +
-            $"{responseTime.Hours} hours and {responseTime.Minutes} minutes");
-    }
-
-    public void AverageTutorResponseTime()
-    {
-        var studentThreads = Threads.StudentsOnly().Questions();
-        var responseTime = studentThreads.AverageResponseTime(DiscussionRole.Staff, DiscussionRole.Admin);
-        Console.WriteLine(
-            "Of all threads responded to by tutors, " +
-            "the average response time of the fastest response was " +
-            $"{responseTime.Hours} hours and {responseTime.Minutes} minutes");
+        Analytics
+            .StudentsOnly()
+            .CountFormatAndOrderBy(user => user.Participation.DaysActive, user => user.Account.Name)
+            .WriteEnumeratedCount();
     }
 }
