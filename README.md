@@ -7,7 +7,7 @@ Perform some data analysis on data downloaded from an Edstem discussion.
 downloadable if you are an administrator on that discussion
 
 ## Example Usage
-Start by creating the two required objects: an `Analytics` instance and a `Threads` instance.
+Start by creating the three required objects: an `Analytics`, a `Threads` instance and a `DiscussionStatistics` instance.
 ```cs
 using Ed.Analytics.Deserialization;
 using Ed.Analytics.Discussion;
@@ -15,9 +15,13 @@ using Ed.Analytics.Models;
 
 Threads threads = ThreadsJSON.Deserialize("threads.json");
 UserAnalytics analytics = AnalyticsCSV.Parse("analytics.csv");
+DiscussionStatistics discussion = new DiscussionStatistics(analytics, threads);
 ```
 
-Now you can analyse the data as you wish. Two code examples are provided
+Now you can analyse the data as you wish. 
+
+### Analysing data directly
+Three code examples are provided
 below to demonstrate how data analysis can be performed.
 
 The following code demonstrates how to 
@@ -58,8 +62,20 @@ var heartsOfTutor =
     };
 ```
 
-In some cases you may want to just reuse some existing/common statistics.
-Here's how you can find the 5 most endorsed users in a discussion:
+LINQ method syntax can also be used along with the provided extension methods.
+For example, getting five threads with the highest number of answers descending:
 ```cs
-var topEndorsed = analytics.TopEndorsed(count: 5);
+threads
+    .OrderByDescending(thread => thread.Answers.Length)
+    .Take(5)
+    .Enumerate(start: 1)
+    .Select(pair => $"{pair.Item1}. {pair.Item2.Title.Text} ({pair.Item2.Answers.Length})")
+    .ForEachWriteLine();
+```
+### Using existing statistics
+In some cases you may want to just reuse some existing/common statistics. 
+These are provided in the `DiscussionStatistics` class.
+Here's how you can find the users with the most active days on a discussion in descending order:
+```cs
+discussion.MostDaysActive();
 ```
